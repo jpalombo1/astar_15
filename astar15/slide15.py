@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 import numpy as np
-from enum import Enum, auto
+from enum import Enum
 from numpy.typing import NDArray
 
 MAX_SLOTS = 16
@@ -17,7 +17,7 @@ class Directions(Enum):
     RIGHT = [0, 1]
 
 
-def tile_distance(self, tile_number: int, tile_row: int, tile_col: int) -> int:
+def tile_distance(tile_number: int, tile_row: int, tile_col: int) -> int:
     """Calculate L1 norm distance tile to expected spot."""
     expected_row = tile_number // SIDE_LENGTH
     expected_col = tile_number % SIDE_LENGTH
@@ -59,11 +59,8 @@ class Slide15:
             try:
                 tile_row = empty_row + direction.value[0] * -1
                 tile_col = empty_col + direction.value[1] * -1
-                print(tile_row, tile_col)
                 neighbors.append(self.slide(tile_row, tile_col, direction))
-                print(f"{direction.name}: Valid!")
-            except ValueError as e:
-                print(f"{direction.name}: {e}")
+            except ValueError:
                 continue
         return neighbors
 
@@ -115,8 +112,3 @@ class Slide15:
         if col >= SIDE_LENGTH or col < 0:
             return False
         return True
-
-
-slide15 = Slide15(random=True)
-print(f"Board:\n{slide15.board}\n")
-print(slide15.neighbors())
