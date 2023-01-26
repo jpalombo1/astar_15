@@ -9,12 +9,12 @@ BLANK_SPACE = 0
 
 
 class Directions(Enum):
-    """Enumerate possible slide directions."""
+    """Enumerate possible slide directions. Values are row and column offsets set by direction."""
 
-    UP = auto()
-    DOWN = auto()
-    LEFT = auto()
-    RIGHT = auto()
+    UP = [-1, 0]
+    DOWN = [1, 0]
+    LEFT = [0, -1]
+    RIGHT = [0, 1]
 
 
 def tile_distance(self, tile_number: int, tile_row: int, tile_col: int) -> int:
@@ -28,11 +28,14 @@ def tile_distance(self, tile_number: int, tile_row: int, tile_col: int) -> int:
 class Slide15:
     """Slide 15 Game."""
 
+    random: bool = True
+
     def __post_init__(self) -> None:
         """Post init."""
-        self.board = self.generate_random_board()
-        print(self.board)
-        return
+        if self.random:
+            self.board = self.generate_random_board()
+        else:
+            self.board = self.generate_board()
 
     def generate_board(self) -> NDArray[np.int_]:
         """Generate standard ordered board, 4x4 15 tiles, 0 empty tile in top left."""
@@ -45,14 +48,19 @@ class Slide15:
         return board.reshape((SIDE_LENGTH, SIDE_LENGTH))
 
     def neighbors(self) -> list[NDArray[np.int_]]:
-        """Generate neighbors of board by trying to slide all directions into blank space."""
+        """Generate neighbors of board by trying to slide all directions into blank space.
+
+        To slide in direction of empty space, must get tile in opposite direction in relation to tile so multiply by -1.
+        """
         empty_rows, empty_cols = np.where(self.board == BLANK_SPACE)
         empty_row, empty_col = empty_rows[0], empty_cols[0]
         neighbors = []
-        print(empty_row, empty_col)
         for direction in Directions:
             try:
-                neighbors.append(self.slide(empty_row, empty_col, direction))
+                tile_row = empty_row + direction.value[0] * -1
+                tile_col = empty_col + direction.value[1] * -1
+                print(tile_row, tile_col)
+                neighbors.append(self.slide(tile_row, tile_col, direction))
                 print(f"{direction.name}: Valid!")
             except ValueError as e:
                 print(f"{direction.name}: {e}")
@@ -60,58 +68,55 @@ class Slide15:
         return neighbors
 
     def slide(
-        self, tile_row: int, tile_col: int, direction: Directions
+        self,
+        tile_row: int,
+        tile_col: int,
+        direction: Directions,
+        set_board: bool = False,
     ) -> NDArray[np.int_]:
+        """Performs sliding given tile to slide row/column, direction to slide. Returns the bew board.
+
+        Also if set_board is set, the new board state is updated to the new board.
+        """
         if not self._check_boundaries(tile_row, tile_col, direction):
             raise ValueError("Not possible move, slide off board, try again!")
         if not self._can_slide(tile_row, tile_col, direction):
             raise ValueError("Not possible move, sliding into non-empty space!")
-        new_row = (
-            tile_row - 1
-            if direction == Directions.UP
-            else tile_row + 1
-            if direction == Directions.DOWN
-            else tile_row
-        )
-        new_col = (
-            tile_col - 1
-            if direction == Directions.LEFT
-            else tile_col + 1
-            if direction == Directions.RIGHT
-            else tile_col
-        )
+        new_row = tile_row + direction.value[0]
+        new_col = tile_col + direction.value[1]
         new_board = np.copy(self.board)
         new_board[new_row, new_col] = new_board[tile_row, tile_col]
         new_board[tile_row, tile_col] = BLANK_SPACE
+        if set_board:
+            self.board = new_board
         return new_board
 
     def _can_slide(self, row: int, col: int, direction: Directions) -> bool:
-        """Check if tile can slide into empty space."""
-        if direction == Directions.UP:
-            return self.board[row - 1, col] == BLANK_SPACE
-        elif direction == Directions.DOWN:
-            return self.board[row + 1, col] == BLANK_SPACE
-        if direction == Directions.LEFT:
-            return self.board[row, col - 1] == BLANK_SPACE
-        elif direction == Directions.RIGHT:
-            return self.board[row, col - 1] == BLANK_SPACE
-        return False
+        """Check if tile can slide/ would move into an empty space."""
+        row += direction.value[0]
+        col += direction.value[1]
+        return self.board[row, col] == BLANK_SPACE
 
     def _check_boundaries(self, row: int, col: int, direction: Directions) -> bool:
-        """Check if sliding tile at xy position in given direction stays within the board board.
+        """Check if sliding tile at position in given direction both stays within the board and even a valid position to start.
 
-        e.g. if xpos is 0 and slide left, xpos now -1 so invalid.
+        e.g. if col is 0 and slide left, col now -1 so invalid.
         """
-        if row + 1 > SIDE_LENGTH - 1 and direction == Directions.DOWN:
+        if row >= SIDE_LENGTH or row < 0:
             return False
-        if row - 1 < 0 and direction == Directions.UP:
+        if col >= SIDE_LENGTH or col < 0:
             return False
-        if col + 1 > SIDE_LENGTH - 1 and direction == Directions.RIGHT:
+
+        row += direction.value[0]
+        col += direction.value[1]
+
+        if row >= SIDE_LENGTH or row < 0:
             return False
-        if col - 1 < 0 and direction == Directions.LEFT:
+        if col >= SIDE_LENGTH or col < 0:
             return False
         return True
 
 
-slide15 = Slide15()
+slide15 = Slide15(random=True)
+print(f"Board:\n{slide15.board}\n")
 print(slide15.neighbors())
