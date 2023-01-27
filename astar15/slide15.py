@@ -18,9 +18,11 @@ class Directions(Enum):
 
 
 def tile_distance(tile_number: int, tile_row: int, tile_col: int) -> int:
-    """Calculate L1 norm distance tile to expected spot."""
-    expected_row = tile_number // SIDE_LENGTH
-    expected_col = tile_number % SIDE_LENGTH
+    """Calculate L1 norm distance tile to expected spot.
+    0 is last number so tile number off by 1 since row 0 col 0 expected tile num is 1.
+    """
+    expected_row = (tile_number - 1) // SIDE_LENGTH
+    expected_col = (tile_number - 1) % SIDE_LENGTH
     return np.abs(expected_row - tile_row) + np.abs(expected_col - tile_col)
 
 
@@ -39,7 +41,7 @@ class Slide15:
 
     def generate_board(self) -> NDArray[np.int_]:
         """Generate standard ordered board, 4x4 15 tiles, 0 empty tile in top left."""
-        return np.arange(MAX_SLOTS).reshape((SIDE_LENGTH, SIDE_LENGTH))
+        return np.roll(np.arange(MAX_SLOTS), -1).reshape((SIDE_LENGTH, SIDE_LENGTH))
 
     def generate_random_board(self) -> NDArray[np.int_]:
         """Generate 4x4 board of 15 tiles, 1 empty 0 tile, randomly shuffled"""
