@@ -1,6 +1,7 @@
 from dataclasses import dataclass
-import numpy as np
 from enum import Enum
+
+import numpy as np
 from numpy.typing import NDArray
 
 MAX_SLOTS = 16

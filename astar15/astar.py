@@ -1,9 +1,7 @@
-from astar15.slide15 import Slide15, tile_distance, Directions, SIDE_LENGTH, BLANK_SPACE
 import numpy as np
 from numpy.typing import NDArray
 
-
-np.random.seed(1234)
+from astar15.slide15 import BLANK_SPACE, SIDE_LENGTH, Directions, Slide15, tile_distance
 
 
 def node_hash(node: NDArray[np.int_]) -> str:
@@ -61,6 +59,7 @@ def potential(node: NDArray[np.int_]) -> int:
 
 def astar(start: NDArray[np.int_], end: NDArray[np.int_]) -> None:
     "A* Algorithm."
+    slide_game = Slide15()
     start_hash = node_hash(start)
     end_hash = node_hash(end)
     open_nodes = {start_hash}
@@ -80,8 +79,7 @@ def astar(start: NDArray[np.int_], end: NDArray[np.int_]) -> None:
         if cur_node_hash == end_hash:
             path = reconstruct_path(came_from, end_hash)
             directions = reconstruct_moves(path)
-            print([direct.name for direct in directions])
-            return f_score[end_hash]
+            return [direct.name for direct in directions]
 
         slide_game.board = cur_node
         for neighbor in slide_game.neighbors():
@@ -104,15 +102,3 @@ def astar(start: NDArray[np.int_], end: NDArray[np.int_]) -> None:
                 f_score[neighbor_hash] = tent_fscore
                 if neighbor_hash not in open_nodes:
                     open_nodes.add(neighbor_hash)
-
-
-slide_game = Slide15(random=True)
-slide_game.board = np.array(
-    [[5, 1, 7, 3], [9, 2, 11, 4], [13, 6, 15, 8], [0, 10, 14, 12]]
-)
-start = np.copy(slide_game.board)
-end = np.copy(Slide15(random=False).generate_board())
-astar(start, end)
-potential(start)
-print(f"Board Start:\n{start}\n")
-print(f"Board Goal:\n{end}\n")
