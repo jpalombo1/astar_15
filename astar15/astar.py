@@ -1,7 +1,6 @@
 import numpy as np
-from numpy.typing import NDArray
-
 from astar15.slide15 import BLANK_SPACE, SIDE_LENGTH, Directions, Slide15, tile_distance
+from numpy.typing import NDArray
 
 
 def node_hash(node: NDArray[np.int_]) -> str:

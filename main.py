@@ -1,5 +1,4 @@
 import numpy as np
-
 from astar15.astar import astar
 from astar15.slide15 import Slide15
 
